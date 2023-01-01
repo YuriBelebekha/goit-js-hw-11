@@ -22,9 +22,6 @@ async function fetchPhotos(q) {
   };  
 };
 
-
-
-
 // function fetchPhotos(q) {
 //   return fetch(`
 //     ${BASE_URL}?key=${API_KEY}&q=${q}&image_type=${image_type}&orientation=${orientation}&safesearch=${safesearch}`)
