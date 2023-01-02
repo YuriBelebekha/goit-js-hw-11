@@ -1,10 +1,9 @@
-import SimpleLightbox from "simplelightbox";
-import "simplelightbox/dist/simple-lightbox.min.css";
-import { Notify } from 'notiflix/build/notiflix-notify-aio';
-
 import './css/styles.css';
 import { fetchPhotos } from "./fetchPhotos";
 
+import SimpleLightbox from "simplelightbox";
+import "simplelightbox/dist/simple-lightbox.min.css";
+import { Notify } from 'notiflix/build/notiflix-notify-aio';
 
 const refs = {
   searchFormBtn: document.querySelector('#search-form'),
@@ -66,13 +65,10 @@ function createMarkupForPhotoGallery(photos) {
 
   refs.galleryPhoto.insertAdjacentHTML('beforeend', markup);
 
-  new SimpleLightbox('.gallery a');
+  const lightbox = new SimpleLightbox('.gallery a');
+  lightbox.refresh();
 };
 
 function clearPhotoGalleryMarkup() {
   refs.galleryPhoto.innerHTML = '';
 };
-
-
-
-// add refresh() method!!!!!!!!!!!!!!!
