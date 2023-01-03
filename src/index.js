@@ -1,4 +1,4 @@
-import './css/styles.css';
+import './sass/styles.scss';
 import { fetchPhotos } from "./fetchPhotos";
 import { per_page } from "./fetchPhotos";
 
@@ -13,13 +13,14 @@ const refs = {
 };
 
 let normalizedSearchQuery = '';
-let page = 1;
+let page;
 
 const options = {
   root: null,
-  rootMargin: '200px',
+  rootMargin: '300px',
   threshold: 1.0,
 };
+const lightbox = new SimpleLightbox('.gallery a');
 const observer = new IntersectionObserver(onLoad, options);
 
 refs.searchFormBtn.addEventListener('submit', onSearchFormSubmit);
@@ -34,23 +35,21 @@ function onSearchFormSubmit(e) {
     return;
   };  
 
+  page = 1;
+
   fetchPhotos(normalizedSearchQuery, page)
-    .then(({ hits, totalHits }) => {
+    .then(({ hits, totalHits }) => {      
       if (totalHits === 0) {
+        clearPhotoGalleryMarkup();
         return Notify.failure('Sorry, there are no images matching your search query. Please try again.');
       };
-
-      if (totalHits > 0) {
-        // console.log(hits); // delete
-        clearPhotoGalleryMarkup();
+      
+      if (totalHits > 0) {               
+        clearPhotoGalleryMarkup();        
         Notify.success(`Hooray! We found ${totalHits} images.`);
-        createMarkupForPhotoGallery(hits);
-
-        // new SimpleLightbox('.gallery a'); ///////////////////////////////////
-        ///
-        observer.observe(refs.guard);
-        ///        
-        return;
+        createMarkupForPhotoGallery(hits);        
+        lightbox.refresh();
+        observer.observe(refs.guard);        
       };
     })
     .catch(error => console.error(error));
@@ -61,7 +60,7 @@ function createMarkupForPhotoGallery(photos) {
     return `
       <div class="photo-card">
         <a href="${largeImageURL}">
-          <img src="${webformatURL}" alt="${tags}" loading="lazy" width="40"/>
+          <img src="${webformatURL}" alt="${tags}" loading="lazy" width="360" height="240"/>
         </a>
         <div class="info">
           <p class="info-item">
@@ -82,9 +81,6 @@ function createMarkupForPhotoGallery(photos) {
   }).join('');
 
   refs.galleryPhoto.insertAdjacentHTML('beforeend', markup);
-
-  // const lightbox = new SimpleLightbox('.gallery a');
-  // lightbox.refresh();
 };
 
 function clearPhotoGalleryMarkup() {
@@ -92,24 +88,30 @@ function clearPhotoGalleryMarkup() {
 };
 
 function onLoad(entries, observer) {
-  console.log(entries);
-
   entries.forEach(entry => {
     if (entry.isIntersecting) {
       page += 1;
       
       fetchPhotos(normalizedSearchQuery, page).then(data => {       
-        const totalPages = Math.ceil( data.totalHits / per_page);
-        
+        const totalPages = Math.ceil(data.totalHits / per_page);
+       
         createMarkupForPhotoGallery(data.hits);
-        // const lightbox = new SimpleLightbox('.gallery a'); ///
-        //////////////////////////////// ЩОСЬ ТРЕБА РОБИТИ З РЕФРЕШ
-        // new SimpleLightbox('.gallery a');
+        lightbox.refresh();
+        slowScroll();
         
-        if (page === totalPages) {
-          observer.unobserve(refs.guard);
-        };        
+        if (page === totalPages) {          
+          observer.unobserve(refs.guard);          
+        };
       });
     };
+  });
+};
+
+function slowScroll() {
+  const { height: cardHeight } = refs.galleryPhoto.firstElementChild.getBoundingClientRect();  
+
+  window.scrollBy({
+    top: cardHeight * 2,
+    behavior: "smooth",
   });
 };

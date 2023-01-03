@@ -1,0 +1,58 @@
+body {
+  font-family: 'Roboto', sans-serif;  
+  background-image: linear-gradient(to right, #E6DADA, #274046);
+}
+
+input {
+  font-family: inherit;
+  font-size: 16px;
+  padding: 2px 5px;
+
+  color: #274046;
+  background-color: transparent;
+  border: solid 1px #274046;
+  border-radius: 3px;
+
+  &::placeholder {
+    color: #274046;
+  }
+}
+
+button {
+  font-family: inherit;
+  font-size: 16px;
+  color: #274046;
+
+  padding: 2px 12px;
+
+  border: solid 1px #274046;
+  border-radius: 3px;
+
+  background-color: transparent;
+
+  &:hover,
+  &:focus {
+    color: #E6DADA;
+    background-color: #274046;
+  }
+}
+
+.search-form {
+  height: 60px;
+  display: flex;
+  align-items: center;  
+
+  &__input {
+    margin-right: 10px;
+  }
+}
+
+.gallery {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+}
+
+.info {
+  display: flex;
+}

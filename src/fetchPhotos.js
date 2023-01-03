@@ -9,7 +9,7 @@ export const { image_type, orientation, safesearch, per_page } = {
   'image_type':  'photo',
   'orientation': 'horizontal',
   'safesearch': true,
-  'per_page': '40', // CHANGE TO 40!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  'per_page': '40',
 };
 
 async function fetchPhotos(q, page) {
@@ -18,18 +18,3 @@ async function fetchPhotos(q, page) {
   `);  
   return await response.data;
 };
-
-
-// fetch without axios
-
-// function fetchPhotos(q) {
-//   return fetch(`
-//     ${BASE_URL}?key=${API_KEY}&q=${q}&image_type=${image_type}&orientation=${orientation}&safesearch=${safesearch}`)
-//       .then(response => {
-//         if (!response.ok) {
-//           throw new Error(response.statusText);
-//         };
-//         return response.json();
-//       })
-//       .catch(error => console.error(error));
-// };
