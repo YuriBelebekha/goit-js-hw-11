@@ -15,12 +15,19 @@ const refs = {
 let normalizedSearchQuery = '';
 let page;
 
+const optionsLightbox = {
+  captionsData: 'alt',  
+  captionDelay: 250,
+  overlayOpacity: 0.85,  
+}
+
 const options = {
   root: null,
-  rootMargin: '300px',
+  rootMargin: '150px',
   threshold: 1.0,
 };
-const lightbox = new SimpleLightbox('.gallery a');
+
+const lightbox = new SimpleLightbox('.gallery a', optionsLightbox);
 const observer = new IntersectionObserver(onLoad, options);
 
 refs.searchFormBtn.addEventListener('submit', onSearchFormSubmit);
@@ -30,11 +37,10 @@ function onSearchFormSubmit(e) {
 
   normalizedSearchQuery = e.currentTarget.searchQuery.value.trim();
    
-  if (normalizedSearchQuery === '') {
-    Notify.info('Your query is empty, please enter data to search.');    
-    return;
+  if (normalizedSearchQuery === '') {    
+    return Notify.info('Your query is empty, please enter data to search.');    
   };  
-
+  
   page = 1;
 
   fetchPhotos(normalizedSearchQuery, page)
@@ -56,24 +62,28 @@ function onSearchFormSubmit(e) {
 };
 
 function createMarkupForPhotoGallery(photos) {
-  const markup = photos.map(({ webformatURL, largeImageURL, tags, likes, views, comments, downloads }) => {
+  const markup = photos.map(({ webformatURL, largeImageURL, tags, likes, views, comments, downloads }) => {    
     return `
       <div class="photo-card">
-        <a href="${largeImageURL}">
-          <img src="${webformatURL}" alt="${tags}" loading="lazy" width="360" height="240"/>
+        <a class="photo-card__link" href="${largeImageURL}">
+          <img class="photo-card__img" src="${webformatURL}" alt="${tags}" loading="lazy"/>
         </a>
         <div class="info">
           <p class="info-item">
-            <b>Likes ${likes}</b>
+            <b>Likes</b>
+            <span>${likes}</span>
           </p>
           <p class="info-item">
-            <b>Views ${views}</b>
+            <b>Views</b>
+            <span>${views}</span>
           </p>
           <p class="info-item">
-            <b>Comments ${comments}</b>
+            <b>Comments</b>
+            <span>${comments}</span>
           </p>
           <p class="info-item">
-            <b>Downloads ${downloads}</b>
+            <b>Downloads</b>
+            <span>${downloads}</span>
           </p>
         </div>
       </div>
@@ -96,7 +106,9 @@ function onLoad(entries, observer) {
         const totalPages = Math.ceil(data.totalHits / per_page);
        
         createMarkupForPhotoGallery(data.hits);
+
         lightbox.refresh();
+        
         slowScroll();
         
         if (page === totalPages) {          
