@@ -14,6 +14,9 @@ const refs = {
 
 let normalizedSearchQuery = '';
 let page;
+let limitReached = true;
+const debounce = require('lodash.debounce');
+const DEBOUNCE_DELAY = 300;
 
 const optionsLightbox = {
   captionsData: 'alt',  
@@ -31,6 +34,7 @@ const lightbox = new SimpleLightbox('.gallery a', optionsLightbox);
 const observer = new IntersectionObserver(onLoad, options);
 
 refs.searchFormBtn.addEventListener('submit', onSearchFormSubmit);
+window.addEventListener('scroll', debounce(onScrollToFinishOfGallery, DEBOUNCE_DELAY));
 
 function onSearchFormSubmit(e) {
   e.preventDefault();
@@ -42,23 +46,28 @@ function onSearchFormSubmit(e) {
   };  
   
   page = 1;
+  limitReached = true;
 
   fetchPhotos(normalizedSearchQuery, page)
-    .then(({ hits, totalHits }) => {      
+    .then(({ hits, totalHits }) => {
       if (totalHits === 0) {
         clearPhotoGalleryMarkup();
         return Notify.failure('Sorry, there are no images matching your search query. Please try again.');
       };
       
-      if (totalHits > 0) {               
-        clearPhotoGalleryMarkup();        
+      if (totalHits > 0) {
+        clearPhotoGalleryMarkup();
         Notify.success(`Hooray! We found ${totalHits} images.`);
-        createMarkupForPhotoGallery(hits);        
+        createMarkupForPhotoGallery(hits);
         lightbox.refresh();
-        observer.observe(refs.guard);        
-      };
-    })
-    .catch(error => console.error(error));
+        
+        if (totalHits > per_page) {
+          limitReached = false;
+          observer.observe(refs.guard); 
+        };        
+      };      
+    })    
+    .catch(error => console.error(error));      
 };
 
 function createMarkupForPhotoGallery(photos) {
@@ -102,21 +111,27 @@ function onLoad(entries, observer) {
     if (entry.isIntersecting) {
       page += 1;
       
-      fetchPhotos(normalizedSearchQuery, page).then(data => {       
-        const totalPages = Math.ceil(data.totalHits / per_page);
-       
-        createMarkupForPhotoGallery(data.hits);
+      fetchPhotos(normalizedSearchQuery, page)
+        .then(data => {
+          limitReached = false;
+          createMarkupForPhotoGallery(data.hits);
 
-        lightbox.refresh();
-        
-        slowScroll();
-        
-        if (page === totalPages) {          
-          observer.unobserve(refs.guard);          
-        };
-      });
-    };
-  });
+          lightbox.refresh();
+          
+          slowScroll();
+          
+          if ((data.hits.length > 0 && (data.hits.length % per_page != 0)) || (data.totalHits === per_page * page)) {
+            limitReached = true;
+            observer.unobserve(refs.guard);
+          };
+        })
+        .catch(error => {
+          console.log(error);
+          limitReached = true;
+          observer.unobserve(refs.guard);
+        });
+    };    
+  });  
 };
 
 function slowScroll() {
@@ -126,4 +141,14 @@ function slowScroll() {
     top: cardHeight * 2,
     behavior: "smooth",
   });
+};
+
+function onScrollToFinishOfGallery() {
+  if (!limitReached) {
+    return;
+  };
+
+  if ((window.innerHeight + window.scrollY) >= document.body.scrollHeight) {
+    Notify.info('We\'re sorry, but you\'ve reached the end of search results.');
+  };
 };
